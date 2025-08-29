@@ -1,83 +1,70 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Baseball Live</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- 頁首 -->
+    <header class="header">
+      <h1>AI 棒球賽事語音轉錄與勝負預測系統 (Demo UI)</h1>
+      <nav>
+        <button data-tab="live" class="active">Live</button>
+        <button data-tab="upload">上傳/轉錄</button>
+        <button data-tab="history">歷史回放</button>
+      </nav>
+    </header>
 
-/**
- * NOTE: Fixed build error by REMOVING `lucide-react` CDN imports.
- * We use lightweight inline SVG icon components below so nothing is fetched from a CDN.
- * If you later install `lucide-react` locally, you can swap these icons back.
- */
+    <!-- 主內容 -->
+    <main>
+      <!-- Live Tab -->
+      <section id="tab-live" class="tab active">
+        <h2>Live Dashboard</h2>
+        <div class="panel">
+          <h3>記分板 (逐局)</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Team</th><th>1</th><th>2</th><th>3</th><th>4</th><th>R</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Away</td><td>0</td><td>1</td><td>0</td><td>2</td><td>3</td></tr>
+              <tr><td>Home</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel">
+          <h3>下局預測</h3>
+          <p>A隊勝率 62%（示意）</p>
+        </div>
+        <div class="panel">
+          <h3>事件時間軸</h3>
+          <ul>
+            <li>[3下] HR（2分）</li>
+            <li>[2上] 三振</li>
+            <li>[1上] Lead-off single</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>即時逐字稿</h3>
+          <pre>
+[00:10] Ground ball to short... out!
+[00:12] Lead-off single...
+[05:31] Swing and a miss — strike three!
+          </pre>
+        </div>
+      </section>
 
-// ---------------- Inline SVG Icon Set (no external deps) --------------------
-const iconCls = "h-4 w-4";
-const stroke = "currentColor";
+      <!-- Upload Tab -->
+      <section id="tab-upload" class="tab">
+        <h2>上傳 / 轉錄</h2>
+        <div class="panel">
+          <p>這裡會放上傳檔案或貼上 URL 的介面（示意）。</p>
+        </div>
+      </section>
 
-const ActivityIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={iconCls} {...props}>
-    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-  </svg>
-);
-
-const BaseballIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={iconCls} {...props}>
-    <circle cx="12" cy="12" r="9" />
-    <path d="M5 8c2 1 4 1 7 1s5 0 7-1" />
-    <path d="M5 16c2-1 4-1 7-1s5 0 7 1" />
-  </svg>
-);
-
-const MicIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={iconCls} {...props}>
-    <rect x="9" y="3" width="6" height="11" rx="3" />
-    <path d="M12 14v6M8 20h8" />
-  </svg>
-);
-
-const PlayIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={iconCls} {...props}>
-    <polygon points="6 4 20 12 6 20 6 4" />
-  </svg>
-);
-
-const PlayCircleIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={iconCls} {...props}>
-    <circle cx="12" cy="12" r="10" />
-    <polygon points="10 8 16 12 10 16 10 8" />
-  </svg>
-);
-
-const UploadIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={iconCls} {...props}>
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-    <polyline points="17 8 12 3 7 8" />
-    <line x1="12" y1="3" x2="12" y2="15" />
-  </svg>
-);
-
-const HistoryIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={iconCls} {...props}>
-    <polyline points="1 4 1 10 7 10" />
-    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
-    <path d="M12 7v5l3 3" />
-  </svg>
-);
-
-const LanguagesIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={iconCls} {...props}>
-    <circle cx="12" cy="12" r="9" />
-    <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
-  </svg>
-);
-
-const LoaderIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" className={`${iconCls} animate-spin`} fill="none" stroke={stroke} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <circle cx="12" cy="12" r="9" opacity="0.25" />
-    <path d="M21 12a9 9 0 0 1-9 9" />
-  </svg>
-);
-
-// --- Mock helpers -----------------------------------------------------------
-function genWinProbSeries(base = 0.55, len = 9) {
-  const data = [] as { inning: string; prob: number }[];
-  let p = base;
-  for (let i = 1; i <= len; i++) {
-    p = Math.min(0.95, Math.max(0.05, p + (Math.random() - 0.5) * 0.08));
+      <!-- History Tab -->
+      <section id="tab-history" class="tab">
